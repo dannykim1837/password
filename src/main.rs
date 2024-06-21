@@ -1,6 +1,6 @@
 mod pentry;
 
-use crate::pentry::{prompt, read_passwords_from_file, ServiceInfo, delete_entry};
+use crate::pentry::{delete_entry, prompt, read_passwords_from_file, ServiceInfo};
 
 fn clr() {
     print!("{}[2J", 27 as char);
@@ -29,40 +29,53 @@ fn main() {
                 );
                 println!("Entry added successfully.");
                 entry.write_to_file();
-            },
+            }
             "2" => {
                 clr();
                 let services = read_passwords_from_file().unwrap_or_else(|err| {
                     eprintln!("Error reading passwords: {}", err);
                     Vec::new()
                 });
-                for item in &services {
-                    println!(
-                        "Service = {}
-    - Username : {}
-    - Password : {}",
-                        item.service, item.username, item.password
-                    );
+                if services.is_empty() {
+                    println!("The list is empty. No entries found.");
+                } else {
+                    for item in &services {
+                        println!(
+                            "Service = {}
+                            - Username : {}
+                            - Password : {}",
+                            item.service, item.username, item.password
+                        );
+                    }
                 }
-            },
+            }
             "3" => {
                 clr();
                 let services = read_passwords_from_file().unwrap_or_else(|err| {
                     eprintln!("Error reading passwords: {}", err);
                     Vec::new()
                 });
-                let search = prompt("Search :");
-                for item in &services {
-                    if item.service.as_str() == search.as_str() {
-                        println!(
-                            "Service = {}
-    - Username : {}
-    - Password : {}",
-                            item.service, item.username, item.password
-                        );
+                if services.is_empty() {
+                    println!("The list is empty. No entries to search.");
+                } else {
+                    let search = prompt("Search :");
+                    let mut found = false;
+                    for item in &services {
+                        if item.service.as_str() == search.as_str() {
+                            println!(
+                                "Service = {}
+                                - Username : {}
+                                - Password : {}",
+                                item.service, item.username, item.password
+                            );
+                            found = true;
+                        }
+                    }
+                    if !found {
+                        println!("No entries found matching '{}'.", search);
                     }
                 }
-            },
+            }
             "4" => {
                 clr();
                 let deletion_service = prompt("Enter the service name to delete: ");
@@ -71,12 +84,12 @@ fn main() {
                 } else {
                     println!("Entry deleted successfully.");
                 }
-            },
+            }
             "5" => {
                 clr();
                 println!("Goodbye!");
                 break;
-            },
+            }
             _ => println!("Invalid choice."),
         }
         println!("\n\n");
